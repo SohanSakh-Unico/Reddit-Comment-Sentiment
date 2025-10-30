@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Social Sentiment Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS: Professional and Modern Styling */
+
+        /* * ROOT: CSS Custom Properties (Variables)
+         * Using variables makes the design consistent and easy to update.
+         */
+        :root {
+            --font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --bg-color: #f8f9fa;           /* Lighter, cleaner background */
+            --surface-color: #ffffff;     /* Card/Container background */
+            --text-color: #212529;        /* Main text */
+            --text-color-muted: #6c757d;  /* Lighter text */
+            --border-color: #dee2e6;
+            
+            --primary-color: #007bff;
+            --primary-color-dark: #0056b3;
+            --primary-color-light: #e6f2ff;
+
+            --success-color: #198754;
+            --success-bg: #e8f3ee;
+            --danger-color: #dc3545;
+            --danger-bg: #fdf6f6;
+            --warning-color: #ffc107;
+            --warning-bg: #fffbf2;
+            
+            --border-radius-sm: 0.25rem; /* 4px */
+            --border-radius-md: 0.5rem;  /* 8px */
+            --border-radius-lg: 0.75rem; /* 12px */
+            --shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            padding: 2rem;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: var(--surface-color);
+            padding: 2.5rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            color: var(--primary-color-dark);
+            border-bottom: 2px solid var(--primary-color-light);
+            padding-bottom: 1rem;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .container > p {
+            font-size: 1.1rem;
+            color: var(--text-color-muted);
+            margin-bottom: 2rem;
+        }
+
+        /* * CONTROLS: Modern CSS Grid Layout
+         * Grid is perfect for forms. 'auto-fit' and 'minmax'
+         * make it natively responsive without media queries.
+         */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: var(--bg-color);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            align-items: flex-end; /* Aligns all items to the bottom */
+        }
+
+        .controls div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .controls input {
+            padding: 0.75rem;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            font-family: var(--font-family);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .controls input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-color-light);
+        }
+
+        .controls button {
+            padding: 0.75rem;
+            border-radius: var(--border-radius-md);
+            border: none;
+            font-size: 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .controls button:hover {
+            background-color: var(--primary-color-dark);
+        }
+        .controls button:active {
+            transform: scale(0.98);
+        }
+        /* Button loading/disabled state */
+        .controls button:disabled {
+            background-color: #aaa;
+            cursor: wait;
+        }
+
+        /* * ALERTS: Reusable components for status messages
+         */
+        .alert {
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+        }
+        .alert-info {
+            background-color: var(--primary-color-light);
+            border-color: var(--primary-color);
+            color: var(--primary-color-dark);
+        }
+        .alert-success {
+            background-color: var(--success-bg);
+            border-color: var(--success-color);
+            color: #0b3d2c;
+        }
+        .alert-danger {
+            background-color: var(--danger-bg);
+            border-color: var(--danger-color);
+            color: #58151c;
+        }
+        .alert h2 { margin-top: 0; }
+        .alert p { margin-bottom: 0; }
+        .alert p:not(:last-child) { margin-bottom: 0.5rem; }
+
+        /* * SUMMARY CHART: Pure CSS Horizontal Bar
+         * This adds a powerful visual element to the dashboard.
+         */
+        .summary-chart {
+            display: flex;
+            height: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            margin: 1rem 0;
+            background: var(--border-color); /* Fallback for 0% values */
+        }
+        .summary-chart .bar {
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            color: white;
+            font-weight: 600;
+            line-height: 1.5rem;
+            text-align: center;
+        }
+        .bar-Positive { background-color: var(--success-color); }
+        .bar-Negative { background-color: var(--danger-color); }
+        .bar-Neutral { background-color: var(--warning-color); color: var(--text-color); }
+
+        /* * LOADING SPINNER: Modern CSS-only spinner
+         */
+        #loading { text-align: center; padding: 2rem; display: none; }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--primary-color-light);
+            border-bottom-color: var(--primary-color);
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* * REVIEW CARDS: Refined card styling
+         */
+        .review-card {
+            border: 1px solid var(--border-color);
+            border-left-width: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: var(--border-radius-md);
+            background-color: var(--surface-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .review-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .review-card p {
+            margin: 0.75rem 0 0 0;
+            color: var(--text-color);
+        }
+        .review-card small {
+            color: var(--text-color-muted);
+            font-size: 0.85rem;
+        }
+
+        /* * SENTIMENT PILLS: More elegant "pill" / "tag" style
+         */
+        .label-Positive { border-left-color: var(--success-color); }
+        .label-Negative { border-left-color: var(--danger-color); }
+        .label-Neutral { border-left-color: var(--warning-color); }
+
+        .label-text {
+            font-weight: 600;
+            margin-left: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px; /* Pill shape */
+            font-size: 0.9rem;
+        }
+        
+        .label-Positive .label-text { background-color: var(--success-bg); color: var(--success-color); }
+        .label-Negative .label-text { background-color: var(--danger-bg); color: var(--danger-color); }
+        .label-Neutral .label-text { background-color: var(--warning-bg); color: var(--warning-color); }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Live Social Sentiment Dashboard 🎯</h1>
+        <p>Demonstrates dynamically fetching, analyzing, and classifying posts from a live feed.</p>
+        
+        <form id="sentiment-form" class="controls">
+            <div>
+                <label for="subreddit">Default Subreddit:</label>
+                <input type="text" id="subreddit" value="GreeceTravel" required>
+            </div>
+            <div>
+                <label for="query">Search Query (Optional - overrides subreddit):</label>
+                <input type="text" id="query" placeholder="e.g., Athens Day Cruise">
+            </div>
+            <div>
+                <label for="limit">Post Limit (1-50):</label>
+                <input type="number" id="limit" value="15" min="1" max="50" required>
+            </div>
+            <button type="submit" id="submit-button">Run Dynamic Analysis</button>
+        </form>
+
+        <div id="loading"><div class="spinner"></div></div>
+        <div id="summary" class="alert alert-info">Set your parameters above and click 'Run Dynamic Analysis'.</div>
+        <div id="results-container"></div>
+    </div>
+
+    <script>
+        // JavaScript: Dynamic Interaction Logic
+        const sentimentForm = document.getElementById('sentiment-form');
+        const submitButton = document.getElementById('submit-button');
+        
+        sentimentForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const subreddit = document.getElementById('subreddit').value;
+            const query = document.getElementById('query').value;
+            const limit = document.getElementById('limit').value;
+            loadSentimentData(subreddit, query, limit);
+        });
+
+        async function loadSentimentData(subreddit, query, limit) {
+            const loading = document.getElementById('loading');
+            const summary = document.getElementById('summary');
+            const resultsContainer = document.getElementById('results-container');
+            
+            // --- UX: Show loading state ---
+            resultsContainer.innerHTML = '';
+            loading.style.display = 'block';
+            submitButton.disabled = true;
+            submitButton.textContent = 'Analyzing...';
+            
+            const sourceDisplay = query ? `Search Query: "${query}"` : `r/${subreddit} Feed`;
+            summary.className = 'alert alert-info';
+            summary.innerHTML = `<h2>Executing: ${sourceDisplay} (${limit} Posts)</h2>`;
+
+            try {
+                // Dynamic URL construction
+                const api_url = `/api/sentiment?subreddit=${encodeURIComponent(subreddit)}&query=${encodeURIComponent(query)}&limit=${limit}`;
+                
+                const response = await fetch(api_url);
+                const data = await response.json();
+
+                loading.style.display = 'none';
+
+                if (!data.success) {
+                    summary.className = 'alert alert-danger';
+                    summary.innerHTML = `<h2>Error: ${data.error}</h2>`;
+                    return;
+                }
+
+                let pos = 0, neg = 0, neut = 0, totalScore = 0;
+                const sentimentIcons = {
+                    'Positive': '✅',
+                    'Negative': '❌',
+                    'Neutral': '💬'
+                };
+
+                // Render each post result
+                data.reviews.forEach((review, index) => {
+                    const card = document.createElement('div');
+                    card.className = `review-card label-${review.sentiment_label}`;
+                    
+                    if (review.sentiment_label === 'Positive') pos++;
+                    else if (review.sentiment_label === 'Negative') neg++;
+                    else neut++;
+                    totalScore += review.sentiment_score;
+
+                    const icon = sentimentIcons[review.sentiment_label] || '🔹';
+
+                    card.innerHTML = `
+                        <strong>Post #${index + 1}</strong>: 
+                        <span class="label-text">${icon} ${review.sentiment_label}</span> 
+                        (Score: ${review.sentiment_score.toFixed(4)})<br>
+                        <small>Author: u/${review.reviewer_handle} | Source: ${review.source_platform}</small>
+                        <p>${review.content_snippet}</p>
+                    `;
+                    resultsContainer.appendChild(card);
+                });
+                
+                // Final Summary Report
+                const total = data.reviews.length;
+                if (total === 0) {
+                    summary.className = 'alert alert-info';
+                    summary.innerHTML = `<h2>No Results Found</h2><p>Your query for "${sourceDisplay}" returned 0 posts. Try a different query or subreddit.</p>`;
+                    return;
+                }
+                
+                const avgScore = totalScore / total;
+                const posPercent = (pos / total) * 100;
+                const negPercent = (neg / total) * 100;
+                const neutPercent = (neut / total) * 100;
+
+                summary.className = 'alert alert-success';
+                summary.innerHTML = `
+                    <h2>Analysis Summary: ${data.parameters.source_used}</h2>
+                    
+                    <div class="summary-chart">
+                        <div class="bar bar-Positive" style="width: ${posPercent}%" title="Positive: ${posPercent.toFixed(1)}%">${posPercent > 10 ? `${posPercent.toFixed(0)}%` : ''}</div>
+                        <div class="bar bar-Neutral" style="width: ${neutPercent}%" title="Neutral: ${neutPercent.toFixed(1)}%">${neutPercent > 10 ? `${neutPercent.toFixed(0)}%` : ''}</div>
+                        <div class="bar bar-Negative" style="width: ${negPercent}%" title="Negative: ${negPercent.toFixed(1)}%">${negPercent > 10 ? `${negPercent.toFixed(0)}%` : ''}</div>
+                    </div>
+                    
+                    <p><strong>Total Posts Analyzed:</strong> ${total}</p>
+                    <p>
+                        <strong>Positive:</strong> ${pos} (${posPercent.toFixed(1)}%) | 
+                        <strong>Negative:</strong> ${neg} (${negPercent.toFixed(1)}%) | 
+                        <strong>Neutral:</strong> ${neut} (${neutPercent.toFixed(1)}%)
+                    </p>
+                    <p><strong>Overall Average Sentiment Score:</strong> ${avgScore.toFixed(4)}</p>
+                `;
+
+            } catch (error) {
+                loading.style.display = 'none';
+                summary.className = 'alert alert-danger';
+                summary.innerHTML = '<h2>FATAL ERROR</h2><p>Could not communicate with the backend server. Is the Express server running?</p>';
+                console.error("Frontend fetch error:", error);
+            } finally {
+                // --- UX: Restore button ---
+                submitButton.disabled = false;
+                submitButton.textContent = 'Run Dynamic Analysis';
+            }
+        }
+
+        // Initial default run on page load
+        document.addEventListener('DOMContentLoaded', () => loadSentimentData('GreeceTravel', '', 15));
+    </script>
+</body>
+</html>

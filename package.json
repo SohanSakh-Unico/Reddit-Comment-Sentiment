@@ -1,0 +1,15 @@
+{
+  "name": "sentiment-poc",
+  "version": "1.0.0",
+  "description": "Live Sentiment PoC for Client Demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "express": "^5.1.0",
+    "sentiment": "^5.0.2"
+  }
+}
