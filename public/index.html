@@ -250,6 +250,38 @@
         .label-Positive .label-text { background-color: var(--success-bg); color: var(--success-color); }
         .label-Negative .label-text { background-color: var(--danger-bg); color: var(--danger-color); }
         .label-Neutral .label-text { background-color: var(--warning-bg); color: var(--warning-color); }
+        
+        /* * --- Reply Card Styling --- */
+        .reply-card {
+            margin-top: 1.25rem;
+            padding: 1rem;
+            background: #fdfdfd; /* Slightly different from main bg */
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+        }
+        .reply-header {
+            font-weight: 600;
+            color: var(--text-color-muted);
+            font-size: 0.85rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .reply-editable-area {
+            min-height: 40px;
+            padding: 0.75rem;
+            background: var(--surface-color);
+            border-radius: var(--border-radius-sm);
+            border: 1px dashed var(--border-color);
+            outline: none;
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+        .reply-editable-area:focus {
+            border-style: solid;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-color-light);
+            background: var(--surface-color);
+        }
 
     </style>
 </head>
@@ -284,6 +316,44 @@
         const sentimentForm = document.getElementById('sentiment-form');
         const submitButton = document.getElementById('submit-button');
         
+        // --- UPDATED: Expanded Reply Templates ---
+        const replyTemplates = {
+            'Positive': [
+                "That's wonderful to hear! Thanks for sharing your positive experience.",
+                "We're so glad you enjoyed it! Thank you for the great feedback.",
+                "Amazing! We love hearing this. Thanks for taking the time to share.",
+                "This is fantastic news! So happy we could help make it a great trip.",
+                "Thank you for the kind words! We'll pass this along to the team."
+            ],
+            'Negative': [
+                "We're truly sorry to hear about this. We'd like to learn more to see how we can help.",
+                "Thank you for bringing this to our attention. This is not the standard we aim for, and we will be looking into this.",
+                "We sincerely apologize for this experience. Your feedback is crucial, and we'll use it to improve.",
+                "Oh no, that's not what we want to hear. Could you please send us a private message with more details so we can investigate?",
+                "We're very sorry for the frustration this caused. We are looking into this issue right now."
+            ],
+            'Neutral': [
+                "Thank you for your feedback. We've noted your comments.",
+                "Appreciate you taking the time to share this information.",
+                "Thanks for the details. This is helpful for our team.",
+                "Understood. We've passed this information on to the relevant department.",
+                "Thanks for the heads-up. We'll keep this in mind."
+            ]
+        };
+        // --- End Updated Templates ---
+
+
+        /**
+         * Gets a random reply from the templates based on sentiment.
+         * @param {string} sentimentLabel - 'Positive', 'Negative', or 'Neutral'
+         * @returns {string} A random reply string.
+         */
+        function getRandomReply(sentimentLabel) {
+            const replies = replyTemplates[sentimentLabel] || replyTemplates['Neutral'];
+            const randomIndex = Math.floor(Math.random() * replies.length);
+            return replies[randomIndex];
+        }
+
         sentimentForm.addEventListener('submit', function(event) {
             event.preventDefault();
             const subreddit = document.getElementById('subreddit').value;
@@ -340,6 +410,7 @@
                     totalScore += review.sentiment_score;
 
                     const icon = sentimentIcons[review.sentiment_label] || '🔹';
+                    const suggestedReply = getRandomReply(review.sentiment_label); // Get random reply
 
                     card.innerHTML = `
                         <strong>Post #${index + 1}</strong>: 
@@ -347,6 +418,13 @@
                         (Score: ${review.sentiment_score.toFixed(4)})<br>
                         <small>Author: u/${review.reviewer_handle} | Source: ${review.source_platform}</small>
                         <p>${review.content_snippet}</p>
+
+                        <div class="reply-card">
+                            <small class="reply-header">💬 <strong>Our Suggested Reply</strong> (Click to edit):</small>
+                            <div class="reply-editable-area" contenteditable="true">
+                                ${suggestedReply}
+                            </div>
+                        </div>
                     `;
                     resultsContainer.appendChild(card);
                 });
